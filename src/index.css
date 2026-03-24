@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-wellness-bg: #FDFCFB;
+  --color-wellness-ink: #1A1A1A;
+  --color-wellness-accent: #164A41; /* Deep Forest Green */
+  --color-wellness-soft: #F4F1EA;
+  --color-wellness-gold: #C5A059; /* Subtle Gold Accent */
+  --color-wellness-card-bg: var(--wellness-card-bg);
+  --color-wellness-border: var(--wellness-border);
+}
+
+@layer base {
+  :root {
+    --wellness-bg: #FDFCFB;
+    --wellness-ink: #1A1A1A;
+    --wellness-soft: #F4F1EA;
+    --wellness-accent: #164A41;
+    --wellness-card-bg: #FFFFFF;
+    --wellness-border: rgba(0, 0, 0, 0.05);
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--wellness-bg);
+    color: var(--wellness-ink);
+    background-image: radial-gradient(var(--wellness-accent) 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
+  }
+  
+  h1, h2, h3, .serif {
+    @apply font-serif tracking-tight;
+    color: var(--wellness-ink);
+  }
+
+  p {
+    @apply leading-relaxed opacity-70;
+    color: var(--wellness-ink);
+  }
+}
+
+.glass {
+  @apply backdrop-blur-xl border shadow-xl shadow-black/5;
+  background-color: color-mix(in srgb, var(--wellness-card-bg), transparent 40%);
+  border-color: var(--wellness-border);
+}
+
+.wellness-card {
+  @apply rounded-[2.5rem] border shadow-sm transition-all duration-500 hover:shadow-xl;
+  background-color: var(--wellness-card-bg);
+  border-color: var(--wellness-border);
+}
+
+.wellness-card:hover {
+  border-color: color-mix(in srgb, var(--wellness-ink), transparent 90%);
+}
+
+.wellness-card-accent {
+  @apply bg-wellness-accent text-white rounded-[2.5rem] shadow-xl shadow-wellness-accent/20;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.section-label {
+  @apply text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block;
+  color: color-mix(in srgb, var(--wellness-accent), transparent 40%);
+}
+
+.markdown-body {
+  @apply font-sans text-base leading-relaxed;
+}
+
+.markdown-body h1 { @apply text-4xl font-serif font-medium mb-8 mt-10; color: var(--wellness-accent); }
+.markdown-body h2 { @apply text-3xl font-serif font-medium mb-6 mt-8; color: var(--wellness-accent); }
+.markdown-body h3 { @apply text-2xl font-serif font-medium mb-4 mt-6; color: var(--wellness-accent); }
+.markdown-body p { @apply mb-6 opacity-70; color: var(--wellness-ink); }
+.markdown-body ul { @apply list-disc pl-6 mb-8 space-y-3; }
+.markdown-body li { @apply opacity-70; color: var(--wellness-ink); }
+.markdown-body strong { @apply font-semibold; color: var(--wellness-ink); }
+.markdown-body blockquote { @apply border-l-4 pl-6 italic my-8 opacity-60; border-color: color-mix(in srgb, var(--wellness-accent), transparent 80%); color: var(--wellness-ink); }

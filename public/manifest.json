@@ -1,0 +1,21 @@
+{
+  "short_name": "DermScan",
+  "name": "DermScan AI: Skin Health",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/dermscan/192/192",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://picsum.photos/seed/dermscan/512/512",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F5F5F0",
+  "display": "standalone",
+  "theme_color": "#164A41",
+  "description": "AI-powered skin health analysis and personalized care."
+}

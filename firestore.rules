@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Document ID: userId (Auth UID)
+    // Fields:
+    //   - uid: string (required) - Auth UID
+    //   - email: string (required) - User email
+    //   - displayName: string (optional) - User display name
+    //   - photoURL: string (optional) - User photo URL
+    //   - createdAt: timestamp (required) - Creation date
+    //   - role: string (required) - Role (user, admin)
+    //   - hasCompletedOnboarding: bool (optional) - Onboarding status
+    //
+    // Collection: /users/{userId}/profiles/{profileId}
+    // Document ID: profileId
+    // Fields:
+    //   - id: string (required) - Profile ID
+    //   - userId: string (required) - Owner's Auth UID
+    //   - name: string (required) - Profile name
+    //   - skinType: string (required) - Skin type
+    //   - concerns: string (optional) - Skin concerns
+    //   - routine: map (optional) - AI routine
+    //   - correlation: map (optional) - Environmental correlation
+    //   - createdAt: timestamp (required) - Creation date
+    //
+    // Collection: /users/{userId}/scans/{scanId}
+    // Document ID: scanId
+    // Fields:
+    //   - id: string (required) - Scan ID
+    //   - profileId: string (required) - ID of the SkinProfile this scan belongs to
+    //   - userId: string (required) - Owner's Auth UID
+    //   - date: timestamp (required) - Scan date
+    //   - image: string (required) - Base64 encoded image
+    //   - analysis: string (required) - Full AI analysis text
+    //   - condition: string (optional) - Identified condition
+    //   - confidence: int (optional) - Confidence score
+    //   - x: number (optional) - X coordinate on skin map
+    //   - y: number (optional) - Y coordinate on skin map
+    //   - metrics: map (optional) - Quantifiable metrics
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "SyedAfsehEhsani@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'createdAt', 'role']) &&
+             hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'role', 'hasCompletedOnboarding']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['user', 'admin'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSkinProfile(data) {
+      return hasRequiredFields(['id', 'userId', 'name', 'skinType', 'createdAt']) &&
+             hasOnlyAllowedFields(['id', 'userId', 'name', 'skinType', 'concerns', 'routine', 'correlation', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.skinType is string &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidScanResult(data) {
+      return hasRequiredFields(['id', 'profileId', 'userId', 'date', 'image', 'analysis']) &&
+             hasOnlyAllowedFields(['id', 'profileId', 'userId', 'date', 'image', 'analysis', 'condition', 'confidence', 'metrics', 'x', 'y']) &&
+             data.userId == request.auth.uid &&
+             data.image is string && data.image.size() < 2000000 && // Limit to ~2MB
+             data.date is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      
+      match /profiles/{profileId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidSkinProfile(request.resource.data);
+        allow update: if isOwner(userId) && isValidSkinProfile(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /scans/{scanId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidScanResult(request.resource.data);
+        allow update: if isOwner(userId) && isValidScanResult(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

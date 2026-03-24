@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Core user profile linked to Firebase Auth UID",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "hasCompletedOnboarding": { "type": "boolean" }
+      },
+      "required": ["uid", "email"]
+    },
+    "SkinProfile": {
+      "title": "SkinProfile",
+      "description": "Specific skin profile for a family member",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "Owner's Auth UID" },
+        "name": { "type": "string" },
+        "skinType": { "type": "string" },
+        "concerns": { "type": "string" },
+        "routine": { "type": "object" },
+        "correlation": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "skinType"]
+    },
+    "ScanResult": {
+      "title": "ScanResult",
+      "description": "A single skin scan and its AI analysis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "profileId": { "type": "string", "description": "ID of the SkinProfile this scan belongs to" },
+        "userId": { "type": "string", "description": "Owner's Auth UID" },
+        "date": { "type": "string", "format": "date-time" },
+        "image": { "type": "string", "description": "Base64 encoded image" },
+        "analysis": { "type": "string", "description": "Full AI analysis text" },
+        "condition": { "type": "string" },
+        "confidence": { "type": "integer" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "metrics": { "type": "object" }
+      },
+      "required": ["id", "profileId", "userId", "date", "image", "analysis"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User's private profile"
+    },
+    "/users/{userId}/profiles/{profileId}": {
+      "schema": "SkinProfile",
+      "description": "Family skin profiles for a user"
+    },
+    "/users/{userId}/scans/{scanId}": {
+      "schema": "ScanResult",
+      "description": "All scans for a user"
+    }
+  }
+}

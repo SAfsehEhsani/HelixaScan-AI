@@ -1,0 +1,5 @@
+{
+  "name": "DermScan AI",
+  "description": "Comprehensive AI-powered skin health platform featuring image analysis, personalized skincare routines, ingredient scanning, environmental flare-up correlation, and family profile management.",
+  "requestFramePermissions": ["camera", "geolocation"]
+}
